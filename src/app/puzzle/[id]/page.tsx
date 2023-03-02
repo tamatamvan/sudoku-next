@@ -9,20 +9,29 @@ import cn from 'classnames';
 import cloneDeep from 'lodash/cloneDeep';
 import flatten from 'lodash/flatten';
 
+import differenceInSeconds from 'date-fns/differenceInSeconds';
+
 import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
 
 const puzzleFetcher = (id: string) =>
   fetch(`/api/puzzles/${id}`).then((puzzle) => puzzle.json());
 
 const Puzzle = ({ params }: { params: { id: string } }) => {
-  const initialized = useRef<boolean>(false);
+  const initialized = useRef<Date | null>(null);
 
   const [solution, setSolution] = useState<string[][]>([]);
   const [invalidCoors, setInvalidCoors] = useState<string[]>([]);
-  const isPuzzleCompleted = useMemo(
-    () => invalidCoors.length === 0 && !flatten(solution).includes('.'),
-    [invalidCoors, solution]
-  );
+  const completionTimeInSecs = useMemo<number | null>(() => {
+    if (
+      initialized.current &&
+      invalidCoors.length === 0 &&
+      !flatten(solution).includes('.')
+    ) {
+      const completedAt = new Date();
+      return differenceInSeconds(completedAt, initialized.current);
+    }
+    return null;
+  }, [invalidCoors, solution]);
 
   const {
     data: sudokuRows,
@@ -36,13 +45,9 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
       // and use original sudokuRows as reference
       // to render sudoku board
       setSolution(cloneDeep(sudokuRows));
+      initialized.current = new Date();
     }
-
-    return () => {
-      if (solution.length) {
-        initialized.current = true;
-      }
-    };
+    return () => {};
   }, [sudokuRows]);
 
   const removeSolution = (coor: TCoordinates) => {
