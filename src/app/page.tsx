@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { supabase } from '~/lib/supabaseClient';
 
 async function getPuzzles() {
-  const { data, error } = await supabase.from('sudoku_puzzles').select();
+  const { data, error } = await supabase.from('sudoku_puzzles').select('id');
   // The return value is *not* serialized
   // You can return Date, Map, Set, etc.
 
@@ -18,19 +18,18 @@ async function getPuzzles() {
 const Home = async () => {
   const puzzles = await getPuzzles();
   return (
-    <div className="container mx-auto my-8 px-8">
-      <h1 className="mb-4 text-3xl font-bold">{`Let's play SUDOKU! 📝🤔`}</h1>
+    <>
       <h2 className="mb-4 text-2xl font-bold">Select Puzzles</h2>
       {puzzles.map((puzzle, idx) => (
         <Link
-          href="/puzzle"
+          href={`/puzzle/${puzzle.id}`}
           className="mb-4 block cursor-pointer rounded-md border p-4 shadow-md hover:shadow-lg"
           key={puzzle.id}
         >
           <span className="font-bold">Puzzle No. {idx + 1}</span>
         </Link>
       ))}
-    </div>
+    </>
   );
 };
 
