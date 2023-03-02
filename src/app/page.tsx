@@ -21,7 +21,7 @@ const Home = async () => {
   const sudokus = await getPuzzles();
   return (
     <>
-      <h2 className="mb-4 text-2xl font-bold">Select Puzzles</h2>
+      <h2 className="mb-4 text-xl font-bold sm:text-2xl">Select Puzzles</h2>
       <div className=" w-full flex-1 flex-wrap">
         {sudokus.map((sudoku, idx) => {
           const level = determineDifficulties(sudoku.puzzle);
