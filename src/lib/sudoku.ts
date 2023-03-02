@@ -5,6 +5,21 @@ export type TCoordinates = {
   y: number;
 };
 
+export type TDifficulties = 'EASY' | 'NORMAL' | 'HARD' | 'SUPER';
+
+export const determineDifficulties: (str: string) => TDifficulties = (
+  sudokuStr
+) => {
+  const missingTilesNum = sudokuStr
+    .split('')
+    .filter((str) => str === '.').length;
+
+  if (missingTilesNum < 27) return 'EASY';
+  if (missingTilesNum < 50) return 'NORMAL';
+  if (missingTilesNum < 60) return 'HARD';
+  return 'SUPER';
+};
+
 export const generateSudokuRows = (sudokuStr: string) => {
   return _times(9, (round: number) => {
     const rowStart = round * 9;

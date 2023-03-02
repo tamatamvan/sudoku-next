@@ -1,10 +1,12 @@
+import classNames from 'classnames';
 import Link from 'next/link';
+import { ISudoku } from '~/interfaces';
+
+import { determineDifficulties } from '~/lib/sudoku';
 import { supabase } from '~/lib/supabaseClient';
 
 async function getPuzzles() {
-  const { data, error } = await supabase.from('sudoku_puzzles').select('id');
-  // The return value is *not* serialized
-  // You can return Date, Map, Set, etc.
+  const { data, error } = await supabase.from('sudoku_puzzles').select();
 
   // Recommendation: handle errors
   if (error) {
@@ -12,23 +14,43 @@ async function getPuzzles() {
     throw new Error('Failed to fetch data');
   }
 
-  return data;
+  return data as ISudoku[];
 }
 
 const Home = async () => {
-  const puzzles = await getPuzzles();
+  const sudokus = await getPuzzles();
   return (
     <>
       <h2 className="mb-4 text-2xl font-bold">Select Puzzles</h2>
-      {puzzles.map((puzzle, idx) => (
-        <Link
-          href={`/puzzle/${puzzle.id}`}
-          className="mb-4 block cursor-pointer rounded-md border p-4 shadow-md hover:shadow-lg"
-          key={puzzle.id}
-        >
-          <span className="font-bold">Puzzle No. {idx + 1}</span>
-        </Link>
-      ))}
+      <div className=" w-full flex-1 flex-wrap">
+        {sudokus.map((sudoku, idx) => {
+          const level = determineDifficulties(sudoku.puzzle);
+          return (
+            <Link
+              href={`/puzzle/${sudoku.id}`}
+              className="mb-4 block grow cursor-pointer rounded-md border p-4 shadow-md hover:shadow-lg"
+              key={sudoku.id}
+            >
+              <div>
+                <div className="mb-2 font-bold">Puzzle No. {idx + 1}</div>
+                <div className="font-bold">
+                  <span>Difficulty Level: </span>
+                  <span
+                    className={classNames('italic', {
+                      'text-green-500': level === 'EASY',
+                      'text-blue-500': level === 'NORMAL',
+                      'text-yellow-500': level === 'HARD',
+                      'text-amber-700': level === 'SUPER',
+                    })}
+                  >
+                    {determineDifficulties(sudoku.puzzle)}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </>
   );
 };
