@@ -12,6 +12,7 @@ import flatten from 'lodash/flatten';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 
 import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
+import WinnerModal from './WinnerModal';
 
 const puzzleFetcher = (id: string) =>
   fetch(`/api/puzzles/${id}`).then((puzzle) => puzzle.json());
@@ -90,6 +91,10 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
 
   return (
     <>
+      <WinnerModal
+        isOpened={!!completionTimeInSecs}
+        completionTimeInSecs={completionTimeInSecs ?? 0}
+      />
       <div
         id="sudoku-board"
         className="mx-auto my-8 grid aspect-square max-w-screen-md grid-rows-9 gap-0 border-2 border-gray-700"
