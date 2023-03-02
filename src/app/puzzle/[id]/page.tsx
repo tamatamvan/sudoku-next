@@ -42,14 +42,21 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
 
   const fillPuzzle = (val: string, coor: { x: number; y: number }) => {
     if (parseInt(val) > 0) {
+      // when input is valid, create coorStr
+      // and check solution validity
       const coorStr = `${coor.x}${coor.y}`;
       const isSolutionForCellValid = checkSolutionValidity(val, coor, solution);
 
+      // solution is invalid, and coordinate not stored in invalidCoors
       if (!isSolutionForCellValid && !invalidCoors.includes(coorStr)) {
+        // store `coorStr` to `invalidCoors`
         setInvalidCoors([...invalidCoors, coorStr]);
       }
 
+      // solution is valid, but `coorStr` previously deemed as invalid
       if (isSolutionForCellValid && invalidCoors.includes(coorStr)) {
+        // remove `coorStr` from `invalidCoors`
+        // update `invalidCoors` value
         const filteredInvalidCoors = invalidCoors.filter(
           (coor) => coor !== coorStr
         );
@@ -89,7 +96,7 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
                   className={cn('flex aspect-square items-center border', {
                     'border-b-gray-700': (rowIdx + 1) % 3 === 0 && rowIdx < 8,
                     'border-r-gray-700': (colIdx + 1) % 3 === 0 && colIdx < 8,
-                    'text-red-700': invalidCoors.includes(`${rowIdx}${colIdx}`),
+                    'text-red-700': invalidCoors.includes(`${rowIdx}${colIdx}`), // mark text number to red when invalid
                   })}
                   key={`cell-${rowIdx}-${colIdx}`}
                 >
