@@ -8,12 +8,16 @@ import cn from 'classnames';
 
 import cloneDeep from 'lodash/cloneDeep';
 
+import { checkSolutionValidity } from '~/lib/sudoku';
+
 const puzzleFetcher = (id: string) =>
   fetch(`/api/puzzles/${id}`).then((puzzle) => puzzle.json());
 
 const Puzzle = ({ params }: { params: { id: string } }) => {
   const initialized = useRef<boolean>(false);
   const [solution, setSolution] = useState<string[][]>([]);
+
+  const [invalidCoors, setInvalidCoors] = useState<string[]>([]);
 
   const {
     data: sudokuRows,
@@ -23,6 +27,9 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
 
   useEffect(() => {
     if (sudokuRows && !initialized.current) {
+      // clone sudokuRows to state `solution`
+      // and use original sudokuRows as reference
+      // to render sudoku board
       setSolution(cloneDeep(sudokuRows));
     }
 
@@ -35,6 +42,20 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
 
   const fillPuzzle = (val: string, coor: { x: number; y: number }) => {
     if (parseInt(val) > 0) {
+      const coorStr = `${coor.x}${coor.y}`;
+      const isSolutionForCellValid = checkSolutionValidity(val, coor, solution);
+
+      if (!isSolutionForCellValid && !invalidCoors.includes(coorStr)) {
+        setInvalidCoors([...invalidCoors, coorStr]);
+      }
+
+      if (isSolutionForCellValid && invalidCoors.includes(coorStr)) {
+        const filteredInvalidCoors = invalidCoors.filter(
+          (coor) => coor !== coorStr
+        );
+        setInvalidCoors(filteredInvalidCoors);
+      }
+
       const updatedSolution = [...solution];
       updatedSolution[coor.x][coor.y] = val;
       setSolution(updatedSolution);
@@ -68,6 +89,7 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
                   className={cn('flex aspect-square items-center border', {
                     'border-b-gray-700': (rowIdx + 1) % 3 === 0 && rowIdx < 8,
                     'border-r-gray-700': (colIdx + 1) % 3 === 0 && colIdx < 8,
+                    'text-red-700': invalidCoors.includes(`${rowIdx}${colIdx}`),
                   })}
                   key={`cell-${rowIdx}-${colIdx}`}
                 >
