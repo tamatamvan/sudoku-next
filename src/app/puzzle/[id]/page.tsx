@@ -1,23 +1,28 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
 import Link from 'next/link';
 import useSWRImmutable from 'swr/immutable';
 import cn from 'classnames';
 
 import cloneDeep from 'lodash/cloneDeep';
+import flatten from 'lodash/flatten';
 
-import { checkSolutionValidity } from '~/lib/sudoku';
+import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
 
 const puzzleFetcher = (id: string) =>
   fetch(`/api/puzzles/${id}`).then((puzzle) => puzzle.json());
 
 const Puzzle = ({ params }: { params: { id: string } }) => {
   const initialized = useRef<boolean>(false);
-  const [solution, setSolution] = useState<string[][]>([]);
 
+  const [solution, setSolution] = useState<string[][]>([]);
   const [invalidCoors, setInvalidCoors] = useState<string[]>([]);
+  const isPuzzleCompleted = useMemo(
+    () => invalidCoors.length === 0 && !flatten(solution).includes('.'),
+    [invalidCoors, solution]
+  );
 
   const {
     data: sudokuRows,
@@ -40,7 +45,16 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
     };
   }, [sudokuRows]);
 
-  const fillPuzzle = (val: string, coor: { x: number; y: number }) => {
+  const removeSolution = (coor: TCoordinates) => {
+    const updatedSolution = [...solution];
+    updatedSolution[coor.x][coor.y] = '.';
+    setSolution(updatedSolution);
+  };
+
+  const fillPuzzle = (val: string, coor: TCoordinates) => {
+    if (!val || val === '0') {
+      removeSolution(coor);
+    }
     if (parseInt(val) > 0) {
       // when input is valid, create coorStr
       // and check solution validity
@@ -104,7 +118,7 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
                     <input
                       className="h-full w-full grow text-center text-lg font-bold italic sm:text-xl md:text-2xl"
                       type="number"
-                      min={1}
+                      min={0}
                       max={9}
                       maxLength={1}
                       value={
