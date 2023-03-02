@@ -124,31 +124,24 @@ const Puzzle = ({ params }: { params: { id: string } }) => {
                   })}
                   key={`cell-${rowIdx}-${colIdx}`}
                 >
-                  {col === '.' ? (
-                    <input
-                      className="h-full w-full grow text-center text-lg font-bold italic sm:text-xl md:text-2xl"
-                      type="number"
-                      min={0}
-                      max={9}
-                      maxLength={1}
-                      value={
-                        solution.length > 0 ? solution[rowIdx][colIdx] : col
-                      }
-                      onChange={(e) =>
-                        void fillPuzzle(
-                          e.target.value.split('').pop() as string, // making sure only single digit is being inputted
-                          {
-                            x: rowIdx,
-                            y: colIdx,
-                          }
-                        )
-                      }
-                    />
-                  ) : (
-                    <span className="grow text-center text-lg font-bold text-gray-500 sm:text-xl md:text-2xl">
-                      {col}
-                    </span>
-                  )}
+                  <input
+                    className="h-full w-full grow text-center text-lg font-bold italic sm:text-xl md:text-2xl"
+                    type="number"
+                    min={0}
+                    max={9}
+                    maxLength={1}
+                    value={solution.length > 0 ? solution[rowIdx][colIdx] : col}
+                    disabled={!!completionTimeInSecs || col !== '.'}
+                    onChange={(e) =>
+                      void fillPuzzle(
+                        e.target.value.split('').pop() as string, // making sure only single digit is being inputted
+                        {
+                          x: rowIdx,
+                          y: colIdx,
+                        }
+                      )
+                    }
+                  />
                 </div>
               ))}
             </div>
