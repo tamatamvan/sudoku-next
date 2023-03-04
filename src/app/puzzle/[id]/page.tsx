@@ -5,7 +5,7 @@ import { generateSudokuRows } from '~/lib/sudoku';
 
 import Board from './Board';
 
-export async function getSudokuRows(id: string) {
+async function getSudokuRows(id: string) {
   const { data, error } = await supabase
     .from('sudoku_puzzles')
     .select('puzzle')
