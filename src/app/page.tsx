@@ -51,7 +51,7 @@ const Home = async ({ searchParams }: THomePageProps) => {
     <>
       <h2 className="mb-4 text-xl font-bold sm:text-2xl">Select Puzzles</h2>
       <div className=" w-full flex-1 flex-wrap">
-        {sudokus.map((sudoku, idx) => {
+        {sudokus.map((sudoku) => {
           const level = determineDifficulties(sudoku.puzzle);
           return (
             <Link
@@ -60,7 +60,9 @@ const Home = async ({ searchParams }: THomePageProps) => {
               key={sudoku.id}
             >
               <div>
-                <div className="mb-2 font-bold">Puzzle No. {idx + 1}</div>
+                <div className="mb-2 truncate font-bold">
+                  Puzzle ID: {sudoku.id}
+                </div>
                 <div className="font-bold">
                   <span>Difficulty Level: </span>
                   <span
