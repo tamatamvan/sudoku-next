@@ -1,3 +1,5 @@
+export const runtime = 'experimental-edge';
+
 import classNames from 'classnames';
 import Link from 'next/link';
 
