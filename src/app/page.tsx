@@ -1,12 +1,32 @@
+export const runtime = 'experimental-edge';
+
 import classNames from 'classnames';
 import Link from 'next/link';
-import { ISudoku } from '~/interfaces';
+
+import {
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
+} from '@heroicons/react/24/outline';
 
 import { determineDifficulties } from '~/lib/sudoku';
 import { supabase } from '~/lib/supabaseClient';
 
-async function getPuzzles() {
-  const { data, error } = await supabase.from('sudoku_puzzles').select();
+type THomePageProps = {
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+type TRange = {
+  from: number;
+  to: number;
+};
+
+const LIMIT_PAGE = 5;
+
+async function getPuzzles({ from, to }: TRange) {
+  const { data, error, count } = await supabase
+    .from('sudoku_puzzles')
+    .select('*', { count: 'exact' })
+    .range(from, to);
 
   // Recommendation: handle errors
   if (error) {
@@ -14,11 +34,19 @@ async function getPuzzles() {
     throw new Error('Failed to fetch data');
   }
 
-  return data as ISudoku[];
+  return { data, count };
 }
 
-const Home = async () => {
-  const sudokus = await getPuzzles();
+const Home = async ({ searchParams }: THomePageProps) => {
+  const page = searchParams?.page ? parseInt(searchParams.page as string) : 1;
+  const range = {
+    from: (page - 1) * LIMIT_PAGE,
+    to: page * LIMIT_PAGE - 1,
+  };
+
+  const { data: sudokus, count } = await getPuzzles(range);
+  const totalPage = Math.ceil((count as number) / LIMIT_PAGE);
+
   return (
     <>
       <h2 className="mb-4 text-xl font-bold sm:text-2xl">Select Puzzles</h2>
@@ -50,6 +78,26 @@ const Home = async () => {
             </Link>
           );
         })}
+      </div>
+      <div className="my-8 block flex items-center justify-center">
+        {page > 1 && (
+          <Link href={`/?page=${page - 1}`}>
+            <ChevronDoubleLeftIcon className="h-6 w-6 shrink-0" />{' '}
+          </Link>
+        )}
+        <div
+          className={classNames('w-full text-center', {
+            'ml-6': page === 1,
+            'mr-6': page === totalPage,
+          })}
+        >
+          Page {page} of {totalPage}
+        </div>
+        {page < totalPage && (
+          <Link href={`/?page=${page + 1}`}>
+            <ChevronDoubleRightIcon className=" h-6 w-6 shrink-0" />
+          </Link>
+        )}
       </div>
     </>
   );
