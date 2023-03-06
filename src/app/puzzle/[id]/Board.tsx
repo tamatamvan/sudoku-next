@@ -4,15 +4,13 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 
 import cn from 'classnames';
 
-import cloneDeep from 'lodash/cloneDeep';
 import flatten from 'lodash/flatten';
-
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 
 import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
+import { useSolutionStore } from './store';
 
 import WinnerModal from './WinnerModal';
-import { useSolutionStore } from './store';
 
 type TBoardProps = {
   sudokuRows: string[][];
