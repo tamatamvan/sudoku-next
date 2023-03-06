@@ -12,6 +12,7 @@ import differenceInSeconds from 'date-fns/differenceInSeconds';
 import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
 
 import WinnerModal from './WinnerModal';
+import { useSolutionStore } from './store';
 
 type TBoardProps = {
   sudokuRows: string[][];
@@ -20,8 +21,17 @@ type TBoardProps = {
 const Board = ({ sudokuRows }: TBoardProps) => {
   const initialized = useRef<Date | null>(null);
 
-  const [solution, setSolution] = useState<string[][]>([]);
-  const [invalidCoors, setInvalidCoors] = useState<string[]>([]);
+  const {
+    state: { solution, invalidCoors },
+    actions: {
+      initializeSolution,
+      fillSolution,
+      removeSolution,
+      addInvalidCoors,
+      removeInvalidCoors,
+    },
+  } = useSolutionStore();
+
   const completionTimeInSecs = useMemo<number | null>(() => {
     if (
       initialized.current &&
@@ -39,17 +49,11 @@ const Board = ({ sudokuRows }: TBoardProps) => {
       // clone sudokuRows to state `solution`
       // and use original sudokuRows as reference
       // to render sudoku board
-      setSolution(cloneDeep(sudokuRows));
+      initializeSolution(sudokuRows);
       initialized.current = new Date();
     }
     return () => {};
   }, [sudokuRows]);
-
-  const removeSolution = (coor: TCoordinates) => {
-    const updatedSolution = [...solution];
-    updatedSolution[coor.x][coor.y] = '.';
-    setSolution(updatedSolution);
-  };
 
   const fillPuzzle = (val: string, coor: TCoordinates) => {
     if (!val || val === '0') {
@@ -64,22 +68,17 @@ const Board = ({ sudokuRows }: TBoardProps) => {
       // solution is invalid, and coordinate not stored in invalidCoors
       if (!isSolutionForCellValid && !invalidCoors.includes(coorStr)) {
         // store `coorStr` to `invalidCoors`
-        setInvalidCoors([...invalidCoors, coorStr]);
+        addInvalidCoors(coorStr);
       }
 
       // solution is valid, but `coorStr` previously deemed as invalid
       if (isSolutionForCellValid && invalidCoors.includes(coorStr)) {
         // remove `coorStr` from `invalidCoors`
         // update `invalidCoors` value
-        const filteredInvalidCoors = invalidCoors.filter(
-          (coor) => coor !== coorStr
-        );
-        setInvalidCoors(filteredInvalidCoors);
+        removeInvalidCoors(coorStr);
       }
 
-      const updatedSolution = [...solution];
-      updatedSolution[coor.x][coor.y] = val;
-      setSolution(updatedSolution);
+      fillSolution(val, coor);
     }
   };
 
