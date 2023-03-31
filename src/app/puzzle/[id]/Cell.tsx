@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { shallow } from 'zustand/shallow';
-import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
+import { TCoordinates } from '~/lib/sudoku';
 import { useSolutionStore } from './store';
 
 type TCellProps = {
@@ -15,35 +15,9 @@ const Cell = ({ puzzleValue, coor, isDisabled }: TCellProps) => {
     shallow
   );
 
-  const { fillSolution, removeSolution, addInvalidCoors, removeInvalidCoors } =
-    useSolutionStore((store) => store.actions, shallow);
-
-  const fillPuzzle = (val: string, coor: TCoordinates) => {
-    if (!val || val === '0') {
-      removeSolution(coor);
-    }
-    if (parseInt(val) > 0) {
-      // when input is valid, create coorStr
-      // and check solution validity
-      const coorStr = `${coor.x}${coor.y}`;
-      const isSolutionForCellValid = checkSolutionValidity(val, coor, solution);
-
-      // solution is invalid, and coordinate not stored in invalidCoors
-      if (!isSolutionForCellValid && !invalidCoors.includes(coorStr)) {
-        // store `coorStr` to `invalidCoors`
-        addInvalidCoors(coorStr);
-      }
-
-      // solution is valid, but `coorStr` previously deemed as invalid
-      if (isSolutionForCellValid && invalidCoors.includes(coorStr)) {
-        // remove `coorStr` from `invalidCoors`
-        // update `invalidCoors` value
-        removeInvalidCoors(coorStr);
-      }
-
-      fillSolution(val, coor);
-    }
-  };
+  const handleSolutionInput = useSolutionStore(
+    (store) => store.actions.handleSolutionInput
+  );
 
   return (
     <div
@@ -63,7 +37,7 @@ const Cell = ({ puzzleValue, coor, isDisabled }: TCellProps) => {
         value={solution.length > 0 ? solution[coor.x][coor.y] : puzzleValue}
         disabled={isDisabled}
         onChange={(e) =>
-          void fillPuzzle(
+          void handleSolutionInput(
             e.target.value.split('').pop() as string, // making sure only single digit is being inputted
             {
               x: coor.x,
