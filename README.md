@@ -67,3 +67,4 @@ pnpm dev
 - Hint mode on gameplay
 - Gameplay mode with max number of mistakes
 - Add unit and e2e tests (technical)
+

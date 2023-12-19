@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import cloneDeep from 'lodash/cloneDeep';
-import { TCoordinates } from '~/lib/sudoku';
+import { checkSolutionValidity, TCoordinates } from '~/lib/sudoku';
 
 interface ISolutionStore {
   state: {
@@ -13,10 +13,11 @@ interface ISolutionStore {
     removeSolution: (coor: TCoordinates) => void;
     addInvalidCoors: (coorStr: string) => void;
     removeInvalidCoors: (coorStr: string) => void;
+    handleSolutionInput: (val: string, coor: TCoordinates) => void;
   };
 }
 
-export const useSolutionStore = create<ISolutionStore>((set) => ({
+export const useSolutionStore = create<ISolutionStore>((set, get) => ({
   state: {
     solution: [],
     invalidCoors: [],
@@ -64,6 +65,46 @@ export const useSolutionStore = create<ISolutionStore>((set) => ({
           },
         };
       });
+    },
+    handleSolutionInput: (val, coor) => {
+      const {
+        state: { solution, invalidCoors },
+        actions: {
+          removeSolution,
+          removeInvalidCoors,
+          fillSolution,
+          addInvalidCoors,
+        },
+      } = get();
+
+      if (!val || val === '0') {
+        removeSolution(coor);
+      }
+      if (parseInt(val) > 0) {
+        // when input is valid, create coorStr
+        // and check solution validity
+        const coorStr = `${coor.x}${coor.y}`;
+        const isSolutionForCellValid = checkSolutionValidity(
+          val,
+          coor,
+          solution
+        );
+
+        // solution is invalid, and coordinate not stored in invalidCoors
+        if (!isSolutionForCellValid && !invalidCoors.includes(coorStr)) {
+          // store `coorStr` to `invalidCoors`
+          addInvalidCoors(coorStr);
+        }
+
+        // solution is valid, but `coorStr` previously deemed as invalid
+        if (isSolutionForCellValid && invalidCoors.includes(coorStr)) {
+          // remove `coorStr` from `invalidCoors`
+          // update `invalidCoors` value
+          removeInvalidCoors(coorStr);
+        }
+
+        fillSolution(val, coor);
+      }
     },
   },
 }));
